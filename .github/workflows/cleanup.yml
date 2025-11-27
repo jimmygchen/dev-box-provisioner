@@ -1,0 +1,54 @@
+name: Cleanup Dev Boxes
+
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type "DELETE ALL" to confirm'
+        required: true
+        type: string
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validate confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "DELETE ALL" ]; then
+            echo "ERROR: Confirmation failed. You must type 'DELETE ALL' exactly."
+            exit 1
+          fi
+
+      - name: Install hcloud CLI
+        run: |
+          wget -q https://github.com/hetznercloud/cli/releases/latest/download/hcloud-linux-amd64.tar.gz
+          tar -xzf hcloud-linux-amd64.tar.gz
+          sudo mv hcloud /usr/local/bin/
+
+      - name: Delete all managed servers
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
+        run: |
+          echo "Finding servers managed by dev-box-provisioner..."
+
+          # Get all servers with the managed-by label
+          servers=$(hcloud server list -o noheader -o columns=id,name -l managed-by=dev-box-provisioner)
+
+          if [ -z "$servers" ]; then
+            echo "No servers found to delete"
+            exit 0
+          fi
+
+          echo "Found servers:"
+          echo "$servers"
+          echo ""
+
+          # Delete each server
+          echo "$servers" | while read -r id name; do
+            echo "Deleting server: $name (ID: $id)"
+            hcloud server delete "$id"
+            echo "✓ Deleted $name"
+          done
+
+          echo ""
+          echo "All managed servers deleted"
