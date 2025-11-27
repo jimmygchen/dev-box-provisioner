@@ -6,3 +6,7 @@
 - key: jimmygchen
   name: test-local-provisioning
   until: 2025-12-01
+
+- key: michaelsproul
+  name: test-another-provisioning
+  until: 2025-12-01
