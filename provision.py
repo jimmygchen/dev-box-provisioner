@@ -126,16 +126,23 @@ def main():
         if args.dry_run:
             ssh_keys = "ssh-rsa FAKE_KEY"
 
-        ssh_key_name = f"{key}-github-key"
+        # Create unique SSH key per server (allows key updates, managed with server)
+        ssh_key_name = f"{name}-key"
+        first_key = ssh_keys.split('\n')[0]
+
+        # Check if key already exists by name
         ret, existing_key, _ = run_cmd(f"hcloud ssh-key list -o noheader -o columns=name | grep -x '{ssh_key_name}' || true", dry_run=args.dry_run)
 
-        if not existing_key:
-            print(f"Adding SSH key: {ssh_key_name}")
-            first_key = ssh_keys.split('\n')[0]
-            ret, _, stderr = run_cmd(f"hcloud ssh-key create --name '{ssh_key_name}' --public-key '{first_key}'", dry_run=args.dry_run)
-            if ret != 0:
-                print(f"ERROR: Failed to create SSH key: {stderr}")
-                continue
+        if existing_key:
+            # Delete old key and recreate (handles key rotation)
+            print(f"Removing old SSH key: {ssh_key_name}")
+            run_cmd(f"hcloud ssh-key delete '{ssh_key_name}'", dry_run=args.dry_run)
+
+        print(f"Adding SSH key: {ssh_key_name}")
+        ret, _, stderr = run_cmd(f"hcloud ssh-key create --name '{ssh_key_name}' --public-key '{first_key}' --label managed-by=dev-box-provisioner --label server={name}", dry_run=args.dry_run)
+        if ret != 0 and not args.dry_run:
+            print(f"ERROR: Failed to create SSH key: {stderr}")
+            continue
 
         print(f"Creating server: {name}")
 

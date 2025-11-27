@@ -1,0 +1,26 @@
+name: Daily Expiry Cleanup
+
+on:
+  schedule:
+    - cron: '0 0 * * *'  # Run daily at midnight UTC
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Install hcloud CLI
+        run: |
+          wget -q https://github.com/hetznercloud/cli/releases/latest/download/hcloud-linux-amd64.tar.gz
+          tar -xzf hcloud-linux-amd64.tar.gz
+          sudo mv hcloud /usr/local/bin/
+
+      - name: Delete expired servers
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
+        run: python3 expiry-cleanup.py

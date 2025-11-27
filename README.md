@@ -61,14 +61,10 @@ Server type and location are configured in `config.yml` and apply globally to al
 ## Current Limitations
 
 - Server type and location are global (no per-machine override)
-- All servers use the default Hetzner project
+- Hetzner project is determined by API token scope (token must be created within the target project)
 - Maximum 10 servers can exist at once (safety limit to prevent cost overruns)
 
 ## TODO
-
-### High Priority
-- [ ] **Daily expiry cleanup**: Scheduled GitHub Action to check `until` dates and delete expired servers
-- [ ] **Project selection**: Support specifying which Hetzner project to create servers in (not default)
 
 ### Nice to Have
 - [ ] **List running machines**: Command/action to list all currently provisioned servers
@@ -76,14 +72,16 @@ Server type and location are configured in `config.yml` and apply globally to al
 - [ ] **Custom server types**: Allow per-machine server type override
 - [ ] **Cost tracking**: Report estimated costs in PR comments
 - [ ] **GitHub environments**: Use GitHub Environments for manual approval before provisioning
+- [ ] **Project selection**: Support specifying which Hetzner project to use (current approach: scope API token to specific project)
 
 ## Setup
 
 ### Required GitHub Secrets
 
 1. `HETZNER_API_TOKEN`: Your Hetzner Cloud API token
-   - Create at: https://console.hetzner.cloud/
+   - Create at: https://console.hetzner.cloud/ → Select your project → Security → API Tokens
    - Needs read/write access to servers and SSH keys
+   - **Recommended**: Create a dedicated project for dev boxes with resource quotas, then generate the API token for that project only. This ensures the token can only create resources in that specific project, providing automatic cost control and isolation.
 
 ### SSH Keys
 
@@ -93,9 +91,11 @@ Your SSH public keys are automatically fetched from `https://github.com/<usernam
 
 ## How It Works
 
+### Provisioning (on PR merge)
 1. When a PR is merged that modifies `dev_boxes.yml`, the workflow triggers
 2. **Teardown phase**: Compares current file with previous version and deletes servers for removed entries
 3. **Provision phase**: For each entry in the YAML:
+   - Check if expiry date has passed (skip if expired)
    - Check if a server with that name already exists (idempotent)
    - Fetch the user's SSH keys from GitHub
    - Add SSH key to Hetzner if not already present
@@ -104,7 +104,14 @@ Your SSH public keys are automatically fetched from `https://github.com/<usernam
 4. The server boots and runs cloud-init to install all tools
 5. User can SSH in and start working
 
-To delete a server, simply remove its entry from `dev_boxes.yml` and merge the PR.
+### Expiry Cleanup (daily at midnight UTC)
+- Automatically runs daily to check all managed servers
+- Deletes servers where expiry date has passed
+- Can be manually triggered from GitHub Actions tab
+- Expiry dates are inclusive (server valid until end of the specified date)
+
+**To delete a server**: Remove its entry from `dev_boxes.yml` and merge the PR (immediate deletion).
+**For automatic deletion**: Server will be deleted at midnight UTC after the expiry date.
 
 ## Contributing
 

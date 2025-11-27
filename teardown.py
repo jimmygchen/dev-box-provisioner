@@ -56,15 +56,21 @@ def main():
         ret, stdout, _ = run_cmd(f"hcloud server list -o noheader -o columns=name | grep -x '{name}' || true")
         if not stdout:
             print(f"Server '{name}' not found, skipping")
-            continue
+        else:
+            # Delete the server
+            ret, stdout, stderr = run_cmd(f"hcloud server delete '{name}'")
+            if ret != 0:
+                print(f"ERROR: Failed to delete server: {stderr}")
+                continue
+            print(f"✓ Deleted server")
 
-        # Delete the server
-        ret, stdout, stderr = run_cmd(f"hcloud server delete '{name}'")
-        if ret != 0:
-            print(f"ERROR: Failed to delete: {stderr}")
-            continue
-
-        print(f"✓ Deleted")
+        # Delete associated SSH key by label
+        ret, stdout, _ = run_cmd(f"hcloud ssh-key list -o noheader -o columns=name -l server={name}")
+        if stdout:
+            for key_name in stdout.split('\n'):
+                if key_name:
+                    run_cmd(f"hcloud ssh-key delete '{key_name}'")
+            print(f"✓ Deleted SSH key(s)")
 
 
 if __name__ == "__main__":

@@ -36,19 +36,39 @@ jobs:
 
           if [ -z "$servers" ]; then
             echo "No servers found to delete"
-            exit 0
+          else
+            echo "Found servers:"
+            echo "$servers"
+            echo ""
+
+            # Delete each server
+            echo "$servers" | while read -r id name; do
+              echo "Deleting server: $name (ID: $id)"
+              hcloud server delete "$id"
+              echo "✓ Deleted $name"
+            done
+            echo ""
           fi
 
-          echo "Found servers:"
-          echo "$servers"
-          echo ""
+          # Delete all managed SSH keys
+          echo "Finding managed SSH keys..."
+          keys=$(hcloud ssh-key list -o noheader -o columns=name -l managed-by=dev-box-provisioner)
 
-          # Delete each server
-          echo "$servers" | while read -r id name; do
-            echo "Deleting server: $name (ID: $id)"
-            hcloud server delete "$id"
-            echo "✓ Deleted $name"
-          done
+          if [ -z "$keys" ]; then
+            echo "No SSH keys found to delete"
+          else
+            echo "Found SSH keys:"
+            echo "$keys"
+            echo ""
+
+            echo "$keys" | while read -r key_name; do
+              if [ -n "$key_name" ]; then
+                echo "Deleting SSH key: $key_name"
+                hcloud ssh-key delete "$key_name"
+                echo "✓ Deleted $key_name"
+              fi
+            done
+          fi
 
           echo ""
-          echo "All managed servers deleted"
+          echo "All managed resources deleted"
