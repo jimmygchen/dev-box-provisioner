@@ -62,13 +62,11 @@ Server type and location are configured in `config.yml` and apply globally to al
 
 - Server type and location are global (no per-machine override)
 - All servers use the default Hetzner project
-- Manual deletion required - remove your entry from `dev_boxes.yml` and the automation doesn't tear it down yet
 - Maximum 10 servers can exist at once (safety limit to prevent cost overruns)
 
 ## TODO
 
 ### High Priority
-- [ ] **Teardown deleted machines**: Detect when entries are removed from `dev_boxes.yml` and delete corresponding servers
 - [ ] **Daily expiry cleanup**: Scheduled GitHub Action to check `until` dates and delete expired servers
 - [ ] **Project selection**: Support specifying which Hetzner project to create servers in (not default)
 
@@ -96,14 +94,17 @@ Your SSH public keys are automatically fetched from `https://github.com/<usernam
 ## How It Works
 
 1. When a PR is merged that modifies `dev_boxes.yml`, the workflow triggers
-2. For each entry in the YAML:
+2. **Teardown phase**: Compares current file with previous version and deletes servers for removed entries
+3. **Provision phase**: For each entry in the YAML:
    - Check if a server with that name already exists (idempotent)
    - Fetch the user's SSH keys from GitHub
    - Add SSH key to Hetzner if not already present
    - Create server with cloud-init configuration
    - Label server with metadata (owner, expiry date, managed-by tag)
-3. The server boots and runs cloud-init to install all tools
-4. User can SSH in and start working
+4. The server boots and runs cloud-init to install all tools
+5. User can SSH in and start working
+
+To delete a server, simply remove its entry from `dev_boxes.yml` and merge the PR.
 
 ## Contributing
 

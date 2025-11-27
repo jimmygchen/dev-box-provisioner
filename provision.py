@@ -6,6 +6,7 @@ import sys
 import re
 import json
 import argparse
+from datetime import datetime
 
 
 def run_cmd(cmd, dry_run=False):
@@ -95,6 +96,18 @@ def main():
 
         if not is_valid_date(until):
             print(f"ERROR: Invalid date '{until}' (must be YYYY-MM-DD)")
+            continue
+
+        # Check if already expired (UTC, expires at midnight on the date)
+        try:
+            expiry_date = datetime.strptime(until, '%Y-%m-%d').date()
+            today_utc = datetime.utcnow().date()
+            if expiry_date < today_utc:
+                print(f"\n=== {name} (user: {key}) ===")
+                print(f"Expired on {until}, skipping")
+                continue
+        except ValueError:
+            print(f"ERROR: Invalid date '{until}'")
             continue
 
         print(f"\n=== {name} (user: {key}) ===")

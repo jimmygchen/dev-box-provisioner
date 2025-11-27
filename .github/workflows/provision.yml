@@ -12,6 +12,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - name: Install dependencies
         run: pip3 install -r requirements.txt
@@ -21,6 +23,11 @@ jobs:
           wget -q https://github.com/hetznercloud/cli/releases/latest/download/hcloud-linux-amd64.tar.gz
           tar -xzf hcloud-linux-amd64.tar.gz
           sudo mv hcloud /usr/local/bin/
+
+      - name: Teardown deleted machines
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
+        run: python3 teardown.py
 
       - name: Provision dev boxes
         env:
