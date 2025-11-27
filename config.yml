@@ -1,0 +1,4 @@
+server_type: cpx52
+location: hel1  # Helsinki
+image: ubuntu-24.04
+max_servers: 10  # Safety limit

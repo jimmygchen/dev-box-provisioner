@@ -1,0 +1,28 @@
+name: Provision Dev Boxes
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'dev_boxes.yml'
+
+jobs:
+  provision:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install dependencies
+        run: pip3 install -r requirements.txt
+
+      - name: Install hcloud CLI
+        run: |
+          wget -q https://github.com/hetznercloud/cli/releases/latest/download/hcloud-linux-amd64.tar.gz
+          tar -xzf hcloud-linux-amd64.tar.gz
+          sudo mv hcloud /usr/local/bin/
+
+      - name: Provision dev boxes
+        env:
+          HCLOUD_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
+        run: python3 provision.py

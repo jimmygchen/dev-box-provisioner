@@ -1,0 +1,8 @@
+# Format:
+#   - key: github-username
+#     name: unique-server-name
+#     until: YYYY-MM-DD
+
+- key: jimmygchen
+  name: test-local-provisioning
+  until: 2025-12-01

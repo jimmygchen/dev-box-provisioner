@@ -1,0 +1,109 @@
+#cloud-config
+
+write_files:
+  - path: /root/bootstrap.sh
+    owner: root:root
+    permissions: "0755"
+    content: |
+      #!/usr/bin/env bash
+      set -euo pipefail
+
+      # Make sure HOME is set (cloud-init often runs with no HOME)
+      : "${HOME:=/root}"
+
+      # -------------------------
+      # Base packages
+      # -------------------------
+      apt-get update -y
+      apt-get install -y curl wget git ca-certificates
+
+      # -------------------------
+      # Install Zsh + Oh My Zsh (non-interactive)
+      # -------------------------
+      apt-get install -y zsh
+
+      # Install oh-my-zsh without changing shell or prompting
+      export RUNZSH=no
+      export CHSH=no
+      export KEEP_ZSHRC=yes
+      sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" || true
+
+      # Make zsh default for this user (root under cloud-init)
+      chsh -s "$(command -v zsh)" "$(whoami)" || true
+
+      # -------------------------
+      # Install Rust (non-interactive)
+      # -------------------------
+      curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
+        sh -s -- -y --no-modify-path
+
+      # Add Rust to PATH for current and future sessions
+      export PATH="$HOME/.cargo/bin:$PATH"
+      echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> "$HOME/.bashrc"
+      echo 'export PATH="$HOME/.cargo/bin:$PATH"' >> "$HOME/.zshrc"
+
+      # -------------------------
+      # Install GitHub CLI
+      # -------------------------
+      if ! command -v gh >/dev/null 2>&1; then
+        mkdir -p -m 755 /etc/apt/keyrings
+        out="$(mktemp)"
+        wget -nv -O "$out" https://cli.github.com/packages/githubcli-archive-keyring.gpg
+        cat "$out" > /etc/apt/keyrings/githubcli-archive-keyring.gpg
+        chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg
+
+        mkdir -p -m 755 /etc/apt/sources.list.d
+        echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" \
+          > /etc/apt/sources.list.d/github-cli.list
+
+        apt-get update -y
+        apt-get install -y gh
+      fi
+
+      # -------------------------
+      # Install build tools
+      # -------------------------
+      apt-get install -y gcc g++ make cmake pkg-config llvm-dev libclang-dev clang
+
+      # -------------------------
+      # Install Docker
+      # -------------------------
+      curl -fsSL https://get.docker.com -o /tmp/get-docker.sh
+      sh /tmp/get-docker.sh
+
+      # -------------------------
+      # Install Kurtosis
+      # -------------------------
+      echo "deb [trusted=yes] https://apt.fury.io/kurtosis-tech/ /" \
+        > /etc/apt/sources.list.d/kurtosis.list
+
+      apt-get update -y
+      apt-get install -y kurtosis-cli
+
+      # -------------------------
+      # Add Kurtosis completion to this user's Zsh config
+      # (root under cloud-init, but no username hardcoding)
+      # -------------------------
+      cat >> "$HOME/.zshrc" <<'EOF_ZSH'
+
+      # --- Kurtosis command-line completion ---
+      if command -v kurtosis >/dev/null 2>&1; then
+        source <(kurtosis completion zsh)
+        compdef _kurtosis kurtosis
+
+        # Kurtosis alias
+        alias kt="kurtosis"
+        compdef __start_kurtosis kt
+      fi
+
+      EOF_ZSH
+
+      # -------------------------
+      # Clone Lighthouse repo into this user's home
+      # -------------------------
+      if [ ! -d "$HOME/lighthouse" ]; then
+        git clone https://github.com/sigp/lighthouse.git "$HOME/lighthouse" || true
+      fi
+
+runcmd:
+  - [ bash, /root/bootstrap.sh ]
