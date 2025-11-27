@@ -77,8 +77,7 @@ Server type and location are configured in `config.yml` and apply globally to al
 - [ ] **List running machines**: Command/action to list all currently provisioned servers
 - [ ] **Notification**: Post server IP and connection details as PR comment
 - [ ] **Custom server types**: Allow per-machine server type override
-- [ ] **Cost tracking**: Report estimated costs in PR comments
-- [ ] **GitHub environments**: Use GitHub Environments for manual approval before provisioning
+- [ ] **Per-machine cloud-init**: Allow specifying custom cloud-init.yaml per machine
 - [ ] **Project selection**: Support specifying which Hetzner project to use (current approach: scope API token to specific project)
 
 ## Setup

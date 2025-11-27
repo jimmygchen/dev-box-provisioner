@@ -50,10 +50,10 @@ def main():
 
     # Verify cloud-init.yaml exists
     try:
-        with open('cloud-init.yaml', 'r') as f:
+        with open('templates/cloud-init.yaml', 'r') as f:
             pass
     except FileNotFoundError:
-        print("ERROR: cloud-init.yaml not found")
+        print("ERROR: templates/cloud-init.yaml not found")
         sys.exit(1)
 
     try:
@@ -164,7 +164,7 @@ def main():
               --location {location} \\
               --image {image} \\
               --ssh-key '{ssh_key_name}' \\
-              --user-data-from-file cloud-init.yaml \\
+              --user-data-from-file templates/cloud-init.yaml \\
               --label managed-by=dev-box-provisioner \\
               --label owner={key} \\
               --label expires={until}"""

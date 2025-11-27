@@ -30,6 +30,7 @@
 - No manual approval workflows (minimal friction)
 - Test locally with dry-run mode first
 - Use virtual environments for Python dependencies
+- No Claude attribution in commit messages
 
 ## Architecture Approach
 

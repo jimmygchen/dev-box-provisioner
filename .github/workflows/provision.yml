@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 2
 
       - name: Install dependencies
-        run: pip3 install -r requirements.txt
+        run: pip3 install -r scripts/requirements.txt
 
       - name: Install hcloud CLI
         run: |
@@ -25,9 +25,9 @@ jobs:
       - name: Teardown deleted machines
         env:
           HCLOUD_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
-        run: python3 teardown.py
+        run: python3 scripts/teardown.py
 
       - name: Provision dev boxes
         env:
           HCLOUD_TOKEN: ${{ secrets.HETZNER_API_TOKEN }}
-        run: python3 provision.py
+        run: python3 scripts/provision.py
