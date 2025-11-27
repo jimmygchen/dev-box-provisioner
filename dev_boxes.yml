@@ -3,12 +3,12 @@
 #     name: unique-server-name
 #     until: YYYY-MM-DD
 
-# Test: Already expired (should skip provisioning)
-- key: jimmygchen
-  name: test-expired
-  until: 2025-11-26
-
 # Test: Expires end of today (should provision, delete tomorrow)
 - key: jimmygchen
   name: test-expires-today
   until: 2025-11-27
+
+# Test: LH PR #8482
+- key: jimmygchen
+  name: pr-8482
+  until: 2025-11-28
