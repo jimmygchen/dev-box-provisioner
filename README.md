@@ -42,12 +42,19 @@ This repository automates the creation of development servers on Hetzner Cloud. 
 
    You can find the server IP in the GitHub Actions logs or via Hetzner Cloud Console.
 
+5. **Start working**:
+   - Lighthouse is already cloned in `~/lighthouse`
+   - Build with `cd ~/lighthouse && make`
+   - Run Kurtosis tests directly with `kurtosis` command
+   - All dev tools pre-installed and ready to use
+
 ## Server Specifications
 
 - **Type**: cpx52 (16 vCPU, 32GB RAM, AMD, dedicated cores)
 - **OS**: Ubuntu 24.04
 - **Region**: hel1 (Helsinki, Finland - eu-central)
 - **Pre-installed**: Docker, Rust, GitHub CLI, Kurtosis, build tools, Zsh with Oh My Zsh
+- **Pre-cloned**: Lighthouse repository in `~/lighthouse`
 
 Server type and location are configured in `config.yml` and apply globally to all machines.
 
