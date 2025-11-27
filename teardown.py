@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-"""Delete servers for entries removed from dev_boxes.yml"""
+"""Delete managed servers not in dev_boxes.yml"""
 import yaml
 import subprocess
 import sys
+import json
 
 
 def run_cmd(cmd):
@@ -10,67 +11,50 @@ def run_cmd(cmd):
     return result.returncode, result.stdout.strip(), result.stderr.strip()
 
 
-def get_previous_boxes():
-    """Get dev_boxes.yml from previous commit"""
-    ret, stdout, _ = run_cmd("git show HEAD:dev_boxes.yml 2>/dev/null")
-    if ret != 0:
-        return []
-    try:
-        data = yaml.safe_load(stdout)
-        return data if data else []
-    except:
-        return []
-
-
-def get_current_boxes():
-    """Get current dev_boxes.yml"""
+def main():
+    # Get current dev_boxes.yml
     try:
         with open('dev_boxes.yml', 'r') as f:
             data = yaml.safe_load(f)
-            return data if data else []
-    except:
-        return []
+            current_names = {box.get('name') for box in (data or []) if box.get('name')}
+    except Exception as e:
+        print(f"ERROR: Could not read dev_boxes.yml: {e}")
+        sys.exit(1)
 
+    print(f"Current dev_boxes.yml has {len(current_names)} server(s)")
 
-def main():
-    previous = get_previous_boxes()
-    current = get_current_boxes()
+    # Get all managed servers from Hetzner
+    ret, stdout, _ = run_cmd("hcloud server list -o json -l managed-by=dev-box-provisioner")
+    if ret != 0 or not stdout:
+        print("No managed servers found in Hetzner")
+        return
 
-    # Build sets of server names
-    previous_names = {box.get('name') for box in previous if box.get('name')}
-    current_names = {box.get('name') for box in current if box.get('name')}
+    servers = json.loads(stdout)
+    managed_names = {s.get('name') for s in servers if s.get('name')}
 
-    # Find deleted entries
-    deleted = previous_names - current_names
+    print(f"Found {len(managed_names)} managed server(s) in Hetzner")
 
-    if not deleted:
+    # Find servers to delete (in Hetzner but not in YAML)
+    to_delete = managed_names - current_names
+
+    if not to_delete:
         print("No servers to delete")
         return
 
-    print(f"Found {len(deleted)} server(s) to delete")
+    print(f"Deleting {len(to_delete)} server(s) not in dev_boxes.yml")
 
-    for name in deleted:
+    for name in to_delete:
         print(f"\n=== Deleting: {name} ===")
 
-        # Check if server exists
-        ret, stdout, _ = run_cmd(f"hcloud server list -o noheader -o columns=name | grep -x '{name}' || true")
-        if not stdout:
-            print(f"Server '{name}' not found, skipping")
-        else:
-            # Delete the server
-            ret, stdout, stderr = run_cmd(f"hcloud server delete '{name}'")
-            if ret != 0:
-                print(f"ERROR: Failed to delete server: {stderr}")
-                continue
-            print(f"✓ Deleted server")
+        # Delete the server
+        ret, _, stderr = run_cmd(f"hcloud server delete '{name}'")
+        if ret != 0:
+            print(f"ERROR: Failed to delete server: {stderr}")
+            continue
+        print(f"✓ Deleted server")
 
-        # Delete associated SSH key by label
-        ret, stdout, _ = run_cmd(f"hcloud ssh-key list -o noheader -o columns=name -l server={name}")
-        if stdout:
-            for key_name in stdout.split('\n'):
-                if key_name:
-                    run_cmd(f"hcloud ssh-key delete '{key_name}'")
-            print(f"✓ Deleted SSH key(s)")
+    # Note: SSH keys are shared across user's servers, not deleted here
+    # Use manual cleanup workflow or wait for user to have no servers
 
 
 if __name__ == "__main__":

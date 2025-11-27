@@ -126,23 +126,25 @@ def main():
         if args.dry_run:
             ssh_keys = "ssh-rsa FAKE_KEY"
 
-        # Create unique SSH key per server (allows key updates, managed with server)
-        ssh_key_name = f"{name}-key"
+        # One SSH key per user (reuse across all their servers)
+        ssh_key_name = f"{key}-key"
         first_key = ssh_keys.split('\n')[0]
 
         # Check if key already exists by name
         ret, existing_key, _ = run_cmd(f"hcloud ssh-key list -o noheader -o columns=name | grep -x '{ssh_key_name}' || true", dry_run=args.dry_run)
 
-        if existing_key:
-            # Delete old key and recreate (handles key rotation)
-            print(f"Removing old SSH key: {ssh_key_name}")
-            run_cmd(f"hcloud ssh-key delete '{ssh_key_name}'", dry_run=args.dry_run)
-
-        print(f"Adding SSH key: {ssh_key_name}")
-        ret, _, stderr = run_cmd(f"hcloud ssh-key create --name '{ssh_key_name}' --public-key '{first_key}' --label managed-by=dev-box-provisioner --label server={name}", dry_run=args.dry_run)
-        if ret != 0 and not args.dry_run:
-            print(f"ERROR: Failed to create SSH key: {stderr}")
-            continue
+        if not existing_key:
+            print(f"Adding SSH key: {ssh_key_name}")
+            ret, _, stderr = run_cmd(f"hcloud ssh-key create --name '{ssh_key_name}' --public-key '{first_key}' --label managed-by=dev-box-provisioner --label owner={key}", dry_run=args.dry_run)
+            if ret != 0 and not args.dry_run:
+                # Key might already exist with same content but different name, skip error
+                if "not unique" in stderr:
+                    print(f"SSH key already exists, continuing")
+                else:
+                    print(f"ERROR: Failed to create SSH key: {stderr}")
+                    continue
+        else:
+            print(f"SSH key {ssh_key_name} already exists, reusing")
 
         print(f"Creating server: {name}")
 

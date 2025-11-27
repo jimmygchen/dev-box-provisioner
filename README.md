@@ -91,14 +91,14 @@ Your SSH public keys are automatically fetched from `https://github.com/<usernam
 
 ## How It Works
 
-### Provisioning (on PR merge)
-1. When a PR is merged that modifies `dev_boxes.yml`, the workflow triggers
-2. **Teardown phase**: Compares current file with previous version and deletes servers for removed entries
+### Provisioning (on push to main)
+1. Workflow triggers on any push to main branch
+2. **Teardown phase**: Compares managed servers in Hetzner vs `dev_boxes.yml`, deletes any not in YAML
 3. **Provision phase**: For each entry in the YAML:
    - Check if expiry date has passed (skip if expired)
    - Check if a server with that name already exists (idempotent)
    - Fetch the user's SSH keys from GitHub
-   - Add SSH key to Hetzner if not already present
+   - Add SSH key to Hetzner if not already present (one key per user, reused across servers)
    - Create server with cloud-init configuration
    - Label server with metadata (owner, expiry date, managed-by tag)
 4. The server boots and runs cloud-init to install all tools

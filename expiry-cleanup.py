@@ -48,15 +48,6 @@ def main():
                 continue
 
             print(f"✓ Deleted server")
-
-            # Delete associated SSH key by label
-            ret, stdout, _ = run_cmd(f"hcloud ssh-key list -o noheader -o columns=name -l server={name}")
-            if stdout:
-                for key_name in stdout.split('\n'):
-                    if key_name:
-                        run_cmd(f"hcloud ssh-key delete '{key_name}'")
-                print(f"✓ Deleted SSH key(s)")
-
             deleted_count += 1
         else:
             print(f"{name}: expires {expires} (still valid)")

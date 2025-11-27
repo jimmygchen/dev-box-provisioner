@@ -38,6 +38,8 @@
 - GitHub Actions for automation
 - Transparent - everyone sees what's running
 - Self-service without direct cloud access
+- Compare actual resources (Hetzner API) vs desired state (YAML) - not git diffs
+- Delete what exists in cloud but not in YAML
 
 ### Cost Optimization
 - On-demand provisioning (pay only for usage)
