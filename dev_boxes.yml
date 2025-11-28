@@ -7,3 +7,7 @@
 - key: jimmygchen
   name: test-expires-today
   until: 2025-11-27
+
+- key: jimmygchen
+  name: hoodi-test-242bdfc
+  until: 2025-12-05
