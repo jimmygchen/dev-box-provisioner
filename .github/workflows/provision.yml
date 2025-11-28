@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+concurrency:
+  group: provision
+  cancel-in-progress: true
+
 jobs:
   provision:
     runs-on: ubuntu-latest

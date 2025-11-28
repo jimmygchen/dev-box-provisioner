@@ -2,7 +2,7 @@
 """Delete servers that have passed their expiry date"""
 import subprocess
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 
 
 def run_cmd(cmd):
@@ -11,7 +11,7 @@ def run_cmd(cmd):
 
 
 def main():
-    print(f"Running expiry cleanup at {datetime.utcnow()} UTC")
+    print(f"Running expiry cleanup at {datetime.now(timezone.utc)} UTC")
 
     # Get all servers with managed-by label
     ret, stdout, _ = run_cmd("hcloud server list -o json -l managed-by=dev-box-provisioner")
@@ -20,7 +20,7 @@ def main():
         return
 
     servers = json.loads(stdout)
-    today_utc = datetime.utcnow().date()
+    today_utc = datetime.now(timezone.utc).date()
     deleted_count = 0
 
     for server in servers:
