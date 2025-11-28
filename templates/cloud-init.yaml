@@ -18,6 +18,11 @@ write_files:
       apt-get install -y curl wget git ca-certificates
 
       # -------------------------
+      # Install yq
+      # -------------------------
+      snap install yq
+
+      # -------------------------
       # Install Zsh + Oh My Zsh (non-interactive)
       # -------------------------
       apt-get install -y zsh

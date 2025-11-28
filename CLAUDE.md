@@ -31,6 +31,7 @@
 - Test locally with dry-run mode first
 - Use virtual environments for Python dependencies
 - No Claude attribution in commit messages
+- Never commit changes - provide commit commands only (user signs commits)
 
 ## Architecture Approach
 
