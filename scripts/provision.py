@@ -102,19 +102,34 @@ def main():
         try:
             expiry_date = datetime.strptime(until, '%Y-%m-%d').date()
             today_utc = datetime.now(timezone.utc).date()
-            if expiry_date < today_utc:
-                print(f"\n=== {name} (user: {key}) ===")
-                print(f"Expired on {until}, skipping")
-                continue
+            is_expired = expiry_date < today_utc
         except ValueError:
             print(f"ERROR: Invalid date '{until}'")
             continue
 
         print(f"\n=== {name} (user: {key}) ===")
 
-        ret, stdout, _ = run_cmd(f"hcloud server list -o noheader -o columns=name | grep -x '{name}' || true", dry_run=False)
+        # Check if server already exists
+        ret, stdout, _ = run_cmd(f"hcloud server describe '{name}' -o json 2>/dev/null || true", dry_run=False)
         if stdout:
-            print(f"Already exists, skipping")
+            server_info = json.loads(stdout)
+            current_expiry = server_info.get('labels', {}).get('expires')
+            if current_expiry != until:
+                print(f"Expiry changed: {current_expiry} -> {until}")
+                if args.dry_run:
+                    print(f"  [DRY-RUN] Would update expiry label")
+                else:
+                    ret, _, stderr = run_cmd(f"hcloud server add-label '{name}' expires={until} --overwrite")
+                    if ret != 0:
+                        print(f"ERROR: Failed to update label: {stderr}")
+                    else:
+                        print(f"Updated expiry label")
+            else:
+                print(f"Already exists with correct expiry")
+            continue
+
+        if is_expired:
+            print(f"Expired on {until}, skipping creation")
             continue
 
         print(f"Fetching SSH keys from github.com/{key}.keys")
