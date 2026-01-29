@@ -6,4 +6,4 @@
 # Test: Expires end of today (should provision, delete tomorrow)
 - key: jimmygchen
   name: long-running-box
-  until: 2026-01-27
+  until: 2026-02-01
