@@ -7,3 +7,11 @@
 - key: jimmygchen
   name: long-running-box
   until: 2026-05-01
+
+- key: jimmygchen
+  name: release-v8.1-no-sync-fix
+  until: 2026-02-27
+
+- key: jimmygchen
+  name: release-v8.1-8039-fix
+  until: 2026-02-27
