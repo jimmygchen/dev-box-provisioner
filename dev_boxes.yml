@@ -5,13 +5,5 @@
 
 # Test: Expires end of today (should provision, delete tomorrow)
 - key: jimmygchen
-  name: release-v8-1-no-sync-fix
-  until: 2026-02-27
-
-- key: jimmygchen
-  name: release-v8-1-8039-fix
-  until: 2026-02-27
-
-- key: jimmygchen
   name: release-v8-1-8890-fix
   until: 2026-02-27
