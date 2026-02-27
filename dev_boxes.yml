@@ -7,7 +7,3 @@
 - key: jimmygchen
   name: release-v8-1-8890-fix
   until: 2026-03-05
-
-- key: jimmygchen
-  name: jimmy-build
-  until: 2026-03-05
