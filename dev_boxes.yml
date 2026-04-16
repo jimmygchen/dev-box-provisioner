@@ -3,7 +3,6 @@
 #     name: unique-server-name
 #     until: YYYY-MM-DD
 
-# Test: Expires end of today (should provision, delete tomorrow)
 - key: jimmygchen
-  name: test
-  until: 2026-03-06
+  name: test-pr-8314
+  until: 2026-04-17
