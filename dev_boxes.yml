@@ -6,3 +6,7 @@
 - key: jimmygchen
   name: coverage-unstable
   until: 2026-04-18
+
+- key: jimmygchen
+  name: test-modularize-bc
+  until: 2026-04-18
