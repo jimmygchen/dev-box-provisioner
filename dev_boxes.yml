@@ -4,5 +4,5 @@
 #     until: YYYY-MM-DD
 
 - key: jimmygchen
-  name: test-pr-8314
-  until: 2026-04-17
+  name: coverage-unstable
+  until: 2026-04-18
