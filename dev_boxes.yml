@@ -10,3 +10,7 @@
 - key: jimmygchen
   name: test-modularize-bc
   until: 2026-04-25
+
+- key: jimmygchen
+  name: test-branch-gloas-genesis
+  until: 2026-04-28
