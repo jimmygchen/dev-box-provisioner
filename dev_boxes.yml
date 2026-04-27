@@ -14,3 +14,7 @@
 - key: jimmygchen
   name: test-branch-gloas-genesis
   until: 2026-04-28
+
+- key: jimmygchen
+  name: test-pr-9180
+  until: 2026-04-28
