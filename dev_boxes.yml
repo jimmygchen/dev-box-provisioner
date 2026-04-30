@@ -18,3 +18,7 @@
 - key: jimmygchen
   name: test-pr-9180
   until: 2026-04-28
+
+- key: jimmygchen
+  name: test-glamsterdam-devnet-2
+  until: 2026-05-01
