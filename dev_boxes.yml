@@ -4,21 +4,5 @@
 #     until: YYYY-MM-DD
 
 - key: jimmygchen
-  name: coverage-unstable
-  until: 2026-04-25
-
-- key: jimmygchen
-  name: test-modularize-bc
-  until: 2026-04-25
-
-- key: jimmygchen
-  name: test-branch-gloas-genesis
-  until: 2026-04-28
-
-- key: jimmygchen
-  name: test-pr-9180
-  until: 2026-04-28
-
-- key: jimmygchen
-  name: test-glamsterdam-devnet-2
-  until: 2026-05-01
+  name: build-benchmark
+  until: 2026-05-06
